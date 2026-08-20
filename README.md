@@ -19,8 +19,7 @@ and how can a traveler use that to book smarter?**
 3. (Recommended) create a virtual environment:
    ```bash
    python -m venv venv
-   venv\Scripts\activate      # Windows
-   source venv/bin/activate   # macOS/Linux
+   venv\Scripts\activate
    ```
 4. Install dependencies:
    ```bash
