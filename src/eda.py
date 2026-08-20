@@ -1,11 +1,3 @@
-"""
-eda.py
-------
-Exploratory Data Analysis on the cleaned flight pricing dataset.
-Generates 6 visualizations (saved as PNGs in outputs/figures/) and
-prints out the key insights driving flight prices.
-"""
-
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")  # no display needed, just save files
