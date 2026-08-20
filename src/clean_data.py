@@ -1,25 +1,3 @@
-"""
-clean_data.py
---------------
-Loads the raw flight pricing dataset and cleans it up so it is ready
-for analysis. The raw data has several real-world data quality issues:
-
-  1. Airline names are written in inconsistent casing
-     (e.g. "AIR INDIA", "air india", "Air India" are all the same airline)
-  2. Source / Destination are a mix of city names, airport codes,
-     and "<City> Airport" text - all referring to the same place
-  3. Total_Stops is written in mixed formats: "0", "non-stop", "1", "1 stop"
-  4. Duration is written in three different formats:
-       - decimal hours   -> "1.67"
-       - hour/min text   -> "3h 11m"
-       - raw minutes     -> "177 min"
-  5. Passenger_Count mixes numerals and number-words ("3" vs "three")
-  6. Every column has ~5% missing values (including the Price column itself)
-
-This script fixes all of the above and writes a clean CSV to
-outputs/cleaned_data.csv
-"""
-
 import re
 import pandas as pd
 import numpy as np
