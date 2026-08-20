@@ -2,11 +2,6 @@ import re
 import pandas as pd
 import numpy as np
 
-
-# ---------------------------------------------------------------------
-# Lookup tables built from inspecting the actual unique values in the
-# dataset (airport codes / "X Airport" variants -> a single city name)
-# ---------------------------------------------------------------------
 CITY_MAP = {
     "AMD": "Ahmedabad", "AHMEDABAD AIRPORT": "Ahmedabad", "AHMEDABAD": "Ahmedabad",
     "BKK": "Bangkok", "BANGKOK AIRPORT": "Bangkok", "BANGKOK": "Bangkok",
@@ -34,7 +29,8 @@ WORD_TO_NUM = {
 
 
 def clean_airline(series: pd.Series) -> pd.Series:
-    """Standardize airline casing, e.g. 'AIR INDIA' / 'air india' -> 'Air India'."""
+    #Standardize airline casing, e.g. 'AIR INDIA' / 'air india' -> 'Air India'
+
     return series.str.strip().str.title().replace({
         "Airasia India": "AirAsia India",
         "Gofirst": "GoFirst",
@@ -43,12 +39,14 @@ def clean_airline(series: pd.Series) -> pd.Series:
 
 
 def clean_city(series: pd.Series) -> pd.Series:
-    """Map airport codes and '<City> Airport' text to a single clean city name."""
+    #Map airport codes and '<City> Airport' text to a single clean city name
+
     return series.str.strip().str.upper().map(CITY_MAP).fillna(series)
 
 
 def clean_stops(series: pd.Series) -> pd.Series:
-    """Normalize Total_Stops to a numeric 0 / 1 / 2 value."""
+
+    #Changing Total_Stops to a numeric 0 or 1 or 2 value
     def _parse(val):
         if pd.isna(val):
             return np.nan
@@ -67,7 +65,9 @@ def clean_stops(series: pd.Series) -> pd.Series:
 
 
 def duration_to_minutes(val) -> float:
-    """Convert any of the 3 raw Duration formats into total minutes."""
+
+
+    #Convert any of the 3 raw Duration formats into total minutes
     if pd.isna(val):
         return np.nan
     val = str(val).strip()
@@ -92,7 +92,7 @@ def duration_to_minutes(val) -> float:
 
 
 def clean_passenger_count(series: pd.Series) -> pd.Series:
-    """Convert number-words ('three') to digits and cast to numeric."""
+    #Convert number-words ('three') to digits and cast to numeric
     def _parse(val):
         if pd.isna(val):
             return np.nan
@@ -107,7 +107,7 @@ def clean_passenger_count(series: pd.Series) -> pd.Series:
 
 
 def time_to_bucket(val) -> str:
-    """Bucket a departure time string (12h or 24h format) into a part of day."""
+    #Bucket a departure time string (12h or 24h format) into a part of day
     if pd.isna(val):
         return np.nan
     val = str(val).strip()
@@ -135,11 +135,11 @@ def time_to_bucket(val) -> str:
 def load_and_clean(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
 
-    # ---- Price: numeric, drop rows with missing Price (our target) ----
+    #Price: numeric, drop rows with missing Price
     df["Price"] = pd.to_numeric(df["Price"], errors="coerce")
     df = df.dropna(subset=["Price"]).copy()
 
-    # ---- Categorical / text cleanup ----
+    #categorical
     df["Airline"] = clean_airline(df["Airline"])
     df["Source"] = clean_city(df["Source"])
     df["Destination"] = clean_city(df["Destination"])
@@ -148,22 +148,22 @@ def load_and_clean(csv_path: str) -> pd.DataFrame:
     df["Passenger_Count"] = clean_passenger_count(df["Passenger_Count"])
     df["Departure_TimeOfDay"] = df["Departure_Time"].map(time_to_bucket)
 
-    # ---- Numeric columns ----
+    #Numeric columns
     df["Distance_km"] = pd.to_numeric(df["Distance_km"], errors="coerce")
     df["Days_Before_Departure"] = pd.to_numeric(df["Days_Before_Departure"], errors="coerce")
 
-    # ---- Drop rows that are missing too much to be useful ----
+    #Drop rows that are missing too much to be useful
     key_cols = ["Airline", "Source", "Destination", "Total_Stops",
                 "Duration_Minutes", "Price"]
     df = df.dropna(subset=key_cols).copy()
 
-    # ---- Remove obvious outliers using the IQR method on Price ----
+    #Remove obvious outliers using the IQR method on Price
     q1, q3 = df["Price"].quantile([0.25, 0.75])
     iqr = q3 - q1
     lower, upper = q1 - 3 * iqr, q3 + 3 * iqr
     df = df[(df["Price"] >= lower) & (df["Price"] <= upper)].copy()
 
-    # ---- Drop the now-redundant raw Duration column ----
+    #Drop the now-redundant raw Duration column
     df = df.drop(columns=["Duration"])
 
     df = df.reset_index(drop=True)
