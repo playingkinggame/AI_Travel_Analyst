@@ -1,14 +1,3 @@
-"""
-main.py
--------
-Runs the full Part 1 pipeline end to end:
-  1. Cleans the raw dataset          (src/clean_data.py)
-  2. Generates visualizations + insights (src/eda.py)
-
-Usage:
-    python main.py
-"""
-
 import sys
 import os
 
